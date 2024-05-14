@@ -1,20 +1,29 @@
+//@autor: Israael Espinoza
+//@version: 1.0
+//@fecha: 13/05/2024
+//@descripcion: Esta aplicacion tiene el objetivo de gestionar un sistema de libros electrónicos.
+
 package main
 
 import (
+	//Importamos el paquene que nos ayudara a conectar con la BDD
 	"database/sql"
 	"fmt"
 
+	//Importamos el driver de postgres
 	_ "github.com/lib/pq"
 )
 
+// Main
 func main() {
 	conexionBdd()
 	a := 3
 	fmt.Println("a", a)
 	incrementoA(&a)
-	fmt.Println("a2",a)
+	fmt.Println("a2", a)
 }
 
+// Funcion que nos da mla conexion con la BDD
 func conexionBdd() {
 	//conexion con la BDD
 	const (
@@ -44,6 +53,7 @@ func conexionBdd() {
 }
 
 
-func incrementoA (a *int) {
+//Funcion de prueba *Borrar*
+func incrementoA(a *int) {
 	*a++
-} 
+}

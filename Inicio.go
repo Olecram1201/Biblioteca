@@ -23,7 +23,6 @@ func main() {
 	conexionBdd()
 	menuInicio()
 
-
 }
 
 // Funcion que me permite navegar en un menu
@@ -33,10 +32,10 @@ func menuInicio() {
 	for opcion != 4 {
 		fmt.Println("MENU")
 		fmt.Println("1. Ingresar un libro")
-		fmt.Println("4. Salir") 
+		fmt.Println("4. Salir")
 		fmt.Println("Que accion desea hacer: ")
 		fmt.Scanln(&opcion)
-		switch opcion{
+		switch opcion {
 		case 1:
 			ingresoLibro()
 		case 4:

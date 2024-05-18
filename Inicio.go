@@ -6,9 +6,13 @@
 package main
 
 import (
+	"bufio"
+	"os"
+
 	//Importamos el paquene que nos ayudara a conectar con la BDD
 	"database/sql"
 	"fmt"
+	"strings"
 
 	//Importamos el driver de postgres
 	_ "github.com/lib/pq"
@@ -17,10 +21,29 @@ import (
 // Main
 func main() {
 	conexionBdd()
-	a := 3
-	fmt.Println("a", a)
-	incrementoA(&a)
-	fmt.Println("a2", a)
+	menuInicio()
+
+
+}
+
+// Funcion que me permite navegar en un menu
+func menuInicio() {
+	var opcion int
+
+	for opcion != 4 {
+		fmt.Println("MENU")
+		fmt.Println("1. Ingresar un libro")
+		fmt.Println("4. Salir") 
+		fmt.Println("Que accion desea hacer: ")
+		fmt.Scanln(&opcion)
+		switch opcion{
+		case 1:
+			ingresoLibro()
+		case 4:
+			os.Exit(0)
+		}
+
+	}
 }
 
 // Funcion que nos da mla conexion con la BDD
@@ -49,11 +72,52 @@ func conexionBdd() {
 		panic(err)
 	}
 
-	fmt.Print("Conexion realizada")
+	fmt.Println("Conexion a la BASE DE DATOS realizada con EXITO")
 }
 
+// Funcion para ingresar un libro
+// En este caso no se solicita un ID puesto que la BDD
+// se encargara de crear uno mediante parametros de identidad.
+func ingresoLibro() {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Println("Ingrese el nombre del libro: ")
+	titulo, _ := reader.ReadString('\n')
+	titulo = strings.TrimSpace(titulo)
 
-//Funcion de prueba *Borrar*
-func incrementoA(a *int) {
-	*a++
+	fmt.Println("Ingrese la tematica del libro: ")
+	tema, _ := reader.ReadString('\n')
+	tema = strings.TrimSpace(tema)
+
+	fmt.Println("Ingrese el autor del libro: ")
+	autor, _ := reader.ReadString('\n')
+	autor = strings.TrimSpace(autor)
+
+	fmt.Println("Ingrese el precio del libro: ")
+	var precio int
+	fmt.Scanln(&precio)
+
+	nuevoLibro := libro{
+		titulo:   titulo,
+		tematica: tema,
+		autor:    autor,
+		precio:   precio,
+	}
+
+	fmt.Println("El libro ingresado presenta las siguientes caracteristicas:\n", nuevoLibro)
+	var listaLibros []libro
+	listaLibros = append(listaLibros, nuevoLibro)
+
+	fmt.Println("Listado de Libros: ")
+	for _, libro := range listaLibros {
+		fmt.Println(libro)
+	}
+}
+
+// Zona de creacion de clases
+type libro struct {
+	titulo   string
+	tematica string
+	autor    string
+	precio   int
+	libroID  int
 }

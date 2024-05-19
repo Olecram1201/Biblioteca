@@ -14,7 +14,7 @@ import (
 	"fmt"
 	"strings"
 
-	//Importamos el driver de postgres
+	//Importamos el driver de MSQL server
 	_ "github.com/lib/pq"
 )
 
@@ -55,22 +55,18 @@ func conexionBdd() {
 		password = "mibe2001"
 		dbname   = "Biblioteca"
 	)
-
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
-
 	//Establecemos la conexion
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
-
 	err = db.Ping()
 	if err != nil {
 		panic(err)
 	}
-
 	fmt.Println("Conexion a la BASE DE DATOS realizada con EXITO")
 }
 

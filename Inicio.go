@@ -14,19 +14,21 @@ import (
 	"fmt"
 	"strings"
 
-	//Importamos el driver de MSQL server
+	//Importamos el driver de  Postgres
+
 	_ "github.com/lib/pq"
 )
 
 // Main
 func main() {
-	conexionBdd()
-	menuInicio()
+	db := conexionBdd()
+	defer db.Close()
+	menuInicio(db)
 
 }
 
 // Funcion que me permite navegar en un menu
-func menuInicio() {
+func menuInicio(db *sql.DB) {
 	var opcion int
 
 	for opcion != 4 {
@@ -37,16 +39,18 @@ func menuInicio() {
 		fmt.Scanln(&opcion)
 		switch opcion {
 		case 1:
-			ingresoLibro()
+			ingresoLibro(db)
 		case 4:
 			os.Exit(0)
+		default:
+			fmt.Println("Opcion no valida")
 		}
 
 	}
 }
 
-// Funcion que nos da mla conexion con la BDD
-func conexionBdd() {
+// Funcion que nos da la conexion con la BDD
+func conexionBdd() *sql.DB {
 	//conexion con la BDD
 	const (
 		host     = "localhost"
@@ -60,59 +64,46 @@ func conexionBdd() {
 	//Establecemos la conexion
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
-		panic(err)
+		fmt.Println("Error al conectar con la base de datos", err)
+		os.Exit(1) // el valor de 1 indica q el codigo a generado un error por lo que se usa osExit para una  salida inmediata
 	}
-	defer db.Close()
+
+	//Comprobacion de la conexion
 	err = db.Ping()
 	if err != nil {
-		panic(err)
+		fmt.Println("Error al conectar con la base de datos", err)
+		os.Exit(1) // el valor de 1 indica q el codigo a generado un error por lo que se usa os.Exit para una  salida inmediata
 	}
+
 	fmt.Println("Conexion a la BASE DE DATOS realizada con EXITO")
+	return db
 }
 
 // Funcion para ingresar un libro
 // En este caso no se solicita un ID puesto que la BDD
 // se encargara de crear uno mediante parametros de identidad.
-func ingresoLibro() {
+func ingresoLibro(db *sql.DB) {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Ingrese el nombre del libro: ")
+
+	fmt.Print("Título del libro: ")
 	titulo, _ := reader.ReadString('\n')
 	titulo = strings.TrimSpace(titulo)
 
-	fmt.Println("Ingrese la tematica del libro: ")
-	tema, _ := reader.ReadString('\n')
-	tema = strings.TrimSpace(tema)
+	fmt.Print("Fecha de Publicación (YYYY-MM-DD): ")
+	fechaPublicacion, _ := reader.ReadString('\n')
+	fechaPublicacion = strings.TrimSpace(fechaPublicacion)
 
-	fmt.Println("Ingrese el autor del libro: ")
-	autor, _ := reader.ReadString('\n')
-	autor = strings.TrimSpace(autor)
+	fmt.Print("Archivo (ruta/al/archivo.pdf): ")
+	archivo, _ := reader.ReadString('\n')
+	archivo = strings.TrimSpace(archivo)
 
-	fmt.Println("Ingrese el precio del libro: ")
-	var precio int
-	fmt.Scanln(&precio)
-
-	nuevoLibro := libro{
-		titulo:   titulo,
-		tematica: tema,
-		autor:    autor,
-		precio:   precio,
+	// Insertar un nuevo libro
+	_, err := db.Exec("INSERT INTO Libro (Título, Fecha_Publicación, Archivo) VALUES ($1, $2, $3)",
+		titulo, fechaPublicacion, archivo)
+	if err != nil {
+		fmt.Println("Error al ingresar el Libro", err)
+		return
 	}
 
-	fmt.Println("El libro ingresado presenta las siguientes caracteristicas:\n", nuevoLibro)
-	var listaLibros []libro
-	listaLibros = append(listaLibros, nuevoLibro)
-
-	fmt.Println("Listado de Libros: ")
-	for _, libro := range listaLibros {
-		fmt.Println(libro)
-	}
-}
-
-// Zona de creacion de clases
-type libro struct {
-	titulo   string
-	tematica string
-	autor    string
-	precio   int
-	libroID  int
+	fmt.Println("El libro ha sido ingresado con exito")
 }

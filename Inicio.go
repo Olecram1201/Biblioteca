@@ -7,15 +7,15 @@ package main
 
 import (
 	"bufio"
-	"os"
-
-	//Importamos el paquene que nos ayudara a conectar con la BDD
-	"database/sql"
 	"fmt"
+	"os"
 	"strings"
 
+	//area de importacion de clases
+	gestionBiblioteca "gestionBiblioteca/gestion"
+	//Importamos el paquene que nos ayudara a conectar con la BDD
+	"database/sql"
 	//Importamos el driver de  Postgres
-
 	_ "github.com/lib/pq"
 )
 
@@ -32,15 +32,60 @@ func menuInicio(db *sql.DB) {
 	var opcion int
 
 	for opcion != 4 {
+		//Opciones del Menu
 		fmt.Println("MENU")
 		fmt.Println("1. Ingresar un libro")
 		fmt.Println("4. Salir")
 		fmt.Println("Que accion desea hacer: ")
 		fmt.Scanln(&opcion)
+
 		switch opcion {
 		case 1:
-			ingresoLibro(db)
+
+			reader := bufio.NewReader(os.Stdin)
+
+			//Iniciadores
+			nlibro := gestionBiblioteca.Libro{}
+			nautor := gestionBiblioteca.Autor{}
+
+			//Solicito el titulo del libro
+			fmt.Println("Título del libro: ")
+			titulo, _ := reader.ReadString('\n')
+			titulo = strings.TrimSpace(titulo)
+			nlibro.SetTitulo(titulo)
+			//Solicito la fecha de publicacion del libro
+			fmt.Println("Fecha de publicacion: ")
+			fmt.Println("(Formato AAAA-MM-DD)")
+			fecha, _ := reader.ReadString('\n')
+			fecha = strings.TrimSpace(fecha)
+			nlibro.SetFecha(fecha)
+			//Solicito el enlace del libro
+			fmt.Println("Link del Libro: ")
+			archivo, _ := reader.ReadString('\n')
+			archivo = strings.TrimSpace(archivo)
+			nlibro.SetArchivo(archivo)
+
+			//Solicito el Nombre de Autor
+			fmt.Println("Link del Libro: ")
+			nombreA, _ := reader.ReadString('\n')
+			nombreA = strings.TrimSpace(nombreA)
+			nautor.SetNombre(nombreA)
+
+			//Solicito el apellido del Autor
+			fmt.Println("Link del Libro: ")
+			apellidoA, _ := reader.ReadString('\n')
+			apellidoA = strings.TrimSpace(apellidoA)
+			nautor.SetApellido(apellidoA)
+
+			//Imprimo la informacion sobre el libro
+			fmt.Println(
+				nlibro.GetTitulo(),
+				nlibro.GetFecha(),
+				nautor.GetNombre(),
+				nautor.GetApellido())
+			nlibro.IngresoLibro(db)
 		case 4:
+			//Opcion para terminar el programa
 			os.Exit(0)
 		default:
 			fmt.Println("Opcion no valida")
@@ -82,28 +127,3 @@ func conexionBdd() *sql.DB {
 // Funcion para ingresar un libro
 // En este caso no se solicita un ID puesto que la BDD
 // se encargara de crear uno mediante parametros de identidad.
-func ingresoLibro(db *sql.DB) {
-	reader := bufio.NewReader(os.Stdin)
-
-	fmt.Print("Título del libro: ")
-	titulo, _ := reader.ReadString('\n')
-	titulo = strings.TrimSpace(titulo)
-
-	fmt.Print("Fecha de Publicación (YYYY-MM-DD): ")
-	fechaPublicacion, _ := reader.ReadString('\n')
-	fechaPublicacion = strings.TrimSpace(fechaPublicacion)
-
-	fmt.Print("Archivo (ruta/al/archivo.pdf): ")
-	archivo, _ := reader.ReadString('\n')
-	archivo = strings.TrimSpace(archivo)
-
-	// Insertar un nuevo libro
-	_, err := db.Exec("INSERT INTO Libro (Título, Fecha_Publicación, Archivo) VALUES ($1, $2, $3)",
-		titulo, fechaPublicacion, archivo)
-	if err != nil {
-		fmt.Println("Error al ingresar el Libro", err)
-		return
-	}
-
-	fmt.Println("El libro ha sido ingresado con exito")
-}

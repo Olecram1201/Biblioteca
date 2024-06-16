@@ -66,13 +66,13 @@ func menuInicio(db *sql.DB) {
 			nlibro.SetArchivo(archivo)
 
 			//Solicito el Nombre de Autor
-			fmt.Println("Link del Libro: ")
+			fmt.Println("Nombre del Autor: (solo nombres) ")
 			nombreA, _ := reader.ReadString('\n')
 			nombreA = strings.TrimSpace(nombreA)
 			nautor.SetNombre(nombreA)
 
 			//Solicito el apellido del Autor
-			fmt.Println("Link del Libro: ")
+			fmt.Println("Apellido del autor: ")
 			apellidoA, _ := reader.ReadString('\n')
 			apellidoA = strings.TrimSpace(apellidoA)
 			nautor.SetApellido(apellidoA)

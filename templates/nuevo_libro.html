@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Nuevo Libro</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <h1>Nuevo Libro</h1>
+    <form action="/libros/nuevo" method="POST">
+        <label for="titulo">Título:</label><br>
+        <input type="text" id="titulo" name="titulo"><br><br>
+        <label for="archivo">Archivo:</label><br>
+        <input type="text" id="archivo" name="archivo"><br><br>
+        <label for="fecha_publicacion">Fecha de Publicación:</label><br>
+        <input type="date" id="fecha_publicacion" name="fecha_publicacion"><br><br>
+        <input type="submit" value="Guardar">
+    </form>
+</body>
+</html>

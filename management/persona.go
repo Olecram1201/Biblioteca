@@ -1,4 +1,4 @@
-package library_system
+package management
 
 type Persona struct {
 	PrimerNombre      string

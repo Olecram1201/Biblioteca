@@ -8,26 +8,24 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"time"
 
-	manage "library_system/management"
-
-	connect "library_system/db/connector"
+	connect "library_system/db"
+	"library_system/management"
 
 	"github.com/gorilla/mux"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-var autores = []manage.Autor{
+var autores = []management.Autor{
 	{
 		Nombre:   "Gabriel",
 		Apellido: "García Márquez",
-		Libros: []manage.Libro{
+		Libros: []management.Libro{
 			{
 				Titulo:           "Cien años de soledad",
 				FechaPublicacion: time.Date(1967, time.May, 30, 0, 0, 0, 0, time.UTC),
@@ -43,7 +41,7 @@ var autores = []manage.Autor{
 	{
 		Nombre:   "J.K.",
 		Apellido: "Rowling",
-		Libros: []manage.Libro{
+		Libros: []management.Libro{
 			{
 				Titulo:           "Harry Potter y la piedra filosofal",
 				FechaPublicacion: time.Date(1997, time.June, 26, 0, 0, 0, 0, time.UTC),
@@ -73,7 +71,7 @@ func main() {
 
 	connect.Connector()
 	// Crear una nueva instancia de ItemLibro
-	libro := manage.ItemLibro{}
+	libro := management.ItemLibro{}
 
 	// Establecer valores utilizando los métodos Set
 	//libro.SetCodigoBarras("9781234567890")
@@ -107,19 +105,19 @@ func main() {
 
 	// CONFIGURACION PARA LA BASE DE DATOS
 	// Auto migración para crear automáticamente las tablas en la base de datos
-	err = db.AutoMigrate(&manage.Autor{}, &manage.Libro{})
+	err = db.AutoMigrate(&management.Autor{}, &management.Libro{})
 	if err != nil {
 		log.Fatalf("Error al realizar la migración de tablas: %v", err)
 	}
 
 	// CREAR UN AUTOR CON LIBROS MEDIANTE SIN ENDPOINTS
 
-	// autor, err := manage.CrearAutor(db, "Gabriel", "García Marquez")
+	// autor, err := management.CrearAutor(db, "Gabriel", "García Marquez")
 	// if err != nil {
 	// 	log.Fatalf("Error al crear el autor: %v", err)
 	// }
 
-	// libro1 := manage.Libro{
+	// libro1 := management.Libro{
 	// 	Titulo:           "Cien años de soledad",
 	// 	FechaPublicacion: time.Date(1967, time.May, 30, 0, 0, 0, 0, time.UTC),
 	// 	Archivo:          "ruta/al/cien_anios_de_soledad.pdf",
@@ -127,7 +125,7 @@ func main() {
 	// }
 	// db.Create(&libro1)
 
-	// libro2 := manage.Libro{
+	// libro2 := management.Libro{
 	// 	Titulo:           "El amor en los tiempos del cólera",
 	// 	FechaPublicacion: time.Date(1985, time.January, 1, 0, 0, 0, 0, time.UTC),
 	// 	Archivo:          "ruta/al/amor_en_los_tiempos_del_colera.pdf",
@@ -155,21 +153,21 @@ func main() {
 	// }
 
 	// // Ejemplo de actualización de un autor
-	// err = manage.ActualizarAutor(db, autor.ID, "Gabriel", "G. Marquez")
+	// err = management.ActualizarAutor(db, autor.ID, "Gabriel", "G. Marquez")
 	// if err != nil {
 	// 	log.Fatalf("Error al actualizar el autor: %v", err)
 	// }
 
 	// Ejemplo de eliminación de un autor (esto también eliminará sus libros debido a la restricción CASCADE)
-	// err = manage.EliminarAutor(db, autor.ID)
+	// err = management.EliminarAutor(db, autor.ID)
 	// if err != nil {
 	// 	log.Fatalf("Error al eliminar el autor: %v", err)
 	// }
 
-	// autorss := manage.Autor{
+	// autorss := management.Autor{
 	// 	Nombre:   "Gabriel García",
 	// 	Apellido: "Marquez",
-	// 	Libros: []manage.Libro{
+	// 	Libros: []management.Libro{
 	// 		{
 	// 			Titulo:           "Cien años de soledad",
 	// 			FechaPublicacion: time.Date(1967, time.May, 30, 0, 0, 0, 0, time.UTC),
@@ -197,13 +195,19 @@ func main() {
 
 	// Configuración de las rutas y el servidor web
 	router := mux.NewRouter()
-	router.HandleFunc("/", indexHandler).Methods("GET")
+	router.HandleFunc("/", homeHandler).Methods("GET")
+	router.HandleFunc("/error", controllers.errorHandler).Methods("GET")
+	router.HandleFunc("/not-found", controllers.notFoundHandler).Methods("GET")
 	router.HandleFunc("/autores", listaAutoresHandler).Methods("GET") // Ruta para listar autores
 	router.HandleFunc("/autores/nuevo", nuevoAutorFormHandler).Methods("GET")
 	router.HandleFunc("/autores/nuevo", nuevoAutorHandler).Methods("POST")
 	router.HandleFunc("/libros", listaLibrosHandler).Methods("GET")
 	router.HandleFunc("/libros/nuevo", nuevoLibroFormHandler).Methods("GET")
 	router.HandleFunc("/libros/nuevo", nuevoLibroHandler).Methods("POST")
+
+	router.NotFoundHandler = http.HandlerFunc(management.notFoundHandler)
+
+	router.MethodNotAllowedHandler = http.HandlerFunc(controllers.notFoundHandler)
 
 	// Carpeta de archivos estáticos (CSS, JS, imágenes, etc.)
 	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
@@ -243,8 +247,8 @@ func conexionGORM(cfg Config) (*gorm.DB, error) {
 	return db, nil
 }
 
-func ObtenerLibrosDeAutor(db *gorm.DB, autorID uint) ([]manage.Libro, error) {
-	var libros []manage.Libro
+func ObtenerLibrosDeAutor(db *gorm.DB, autorID uint) ([]management.Libro, error) {
+	var libros []management.Libro
 
 	// Cargar todos los libros del autor con el ID especificado
 	result := db.Where("autor_id = ?", autorID).Find(&libros)
@@ -257,29 +261,27 @@ func ObtenerLibrosDeAutor(db *gorm.DB, autorID uint) ([]manage.Libro, error) {
 
 // Handlers
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "index.html", nil)
-	// fmt.Fprintf(w, "Bienvenido a la biblfasdfadsioteca virtual")
-
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+	controllers.renderTemplate(w, "index.html", nil)
 }
 
 func listaAutoresHandler(w http.ResponseWriter, r *http.Request) {
 	// Renderizar la plantilla HTML con los datos ficticios de autores
-	if err := renderTemplate(w, "lista_autores.html", autores); err != nil {
+	if err := controllers.renderTemplate(w, "lista_autores.html", autores); err != nil {
 		http.Error(w, "Error al renderizar la plantilla", http.StatusInternalServerError)
 		return
 	}
 }
 
 func nuevoAutorFormHandler(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "nuevo_autor.html", nil)
+	controllers.renderTemplate(w, "nuevo_autor.html", nil)
 }
 
 func nuevoAutorHandler(w http.ResponseWriter, r *http.Request) {
 	nombre := r.FormValue("nombre")
 	apellido := r.FormValue("apellido")
 
-	autor := manage.Autor{
+	autor := management.Autor{
 		Nombre:   nombre,
 		Apellido: apellido,
 	}
@@ -299,7 +301,7 @@ func listaLibrosHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// var libros []manage.Libro
+// var libros []management.Libro
 // if err := db.Find(&libros).Error; err != nil {
 // 	http.Error(w, "Error al buscar libros en la base de datos", http.StatusInternalServerError)
 // 	return
@@ -320,7 +322,7 @@ func nuevoLibroHandler(w http.ResponseWriter, r *http.Request) {
 	archivo := r.FormValue("archivo")
 	fechaPublicacion, _ := time.Parse("2006-01-02", r.FormValue("fecha_publicacion"))
 
-	libro := manage.Libro{
+	libro := management.Libro{
 		Titulo:           titulo,
 		Archivo:          archivo,
 		FechaPublicacion: fechaPublicacion,
@@ -331,21 +333,18 @@ func nuevoLibroHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // funcion para renderizar la plantilla localizada en ./templates
-func renderTemplate(w http.ResponseWriter, tmpl string, data interface{}) error {
-	// Cargar la plantilla desde el sistema de archivos
-	t, err := template.ParseFiles("templates/" + tmpl)
-	if err != nil {
-		return err
-	}
+// func renderTemplate(w http.ResponseWriter, tmpl string, data interface{}) error {
 
-	// Ejecutar la plantilla y escribir el resultado en la respuesta HTTP
-	err = t.Execute(w, data)
-	if err != nil {
-		return err
-	}
+// 	t, err := template.ParseFiles("templates/" + tmpl)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	// Render template
+// 	t.Execute(w, data)
+
+// 	return nil
+// }
 
 /////////////////////////////////////////////////////
 

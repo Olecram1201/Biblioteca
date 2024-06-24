@@ -1,4 +1,4 @@
-package library_system
+package management
 
 import (
 	"fmt"

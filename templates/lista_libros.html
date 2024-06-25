@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Listado de Libros</title>
+</head>
+<body>
+    <h1>Listado de Libros</h1>
+    <ul>
+        {{range .}}
+        <li>
+            <h2>{{.Titulo}}</h2>
+            <strong>Fecha de Publicación:</strong> {{.FechaPublicacion.Format "02/01/2006"}}<br>
+            <strong>Archivo:</strong> <a href="{{.Archivo}}">Descargar</a>
+        </li>
+        {{end}}
+    </ul>
+</body>
+</html>

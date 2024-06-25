@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Listado de Autores</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <h1>Listado de Autores</h1>
+    <ul>
+        {{range .}}
+        <li>{{.Nombre}} {{.Apellido}}</li>
+        {{end}}
+    </ul>
+    <a href="/autores/nuevo">Nuevo Autor</a>
+</body>
+</html>

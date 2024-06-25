@@ -13,8 +13,11 @@ import (
 	"os"
 	"time"
 
+	"library_system/controllers"
 	connect "library_system/db"
 	"library_system/management"
+
+	// "library_system/management"
 
 	"github.com/gorilla/mux"
 	"gorm.io/driver/postgres"
@@ -196,8 +199,8 @@ func main() {
 	// Configuración de las rutas y el servidor web
 	router := mux.NewRouter()
 	router.HandleFunc("/", homeHandler).Methods("GET")
-	router.HandleFunc("/error", controllers.errorHandler).Methods("GET")
-	router.HandleFunc("/not-found", controllers.notFoundHandler).Methods("GET")
+	router.HandleFunc("/error", controllers.ErrorHandler).Methods("GET")
+	router.HandleFunc("/not-found", controllers.NotFoundHandler).Methods("GET")
 	router.HandleFunc("/autores", listaAutoresHandler).Methods("GET") // Ruta para listar autores
 	router.HandleFunc("/autores/nuevo", nuevoAutorFormHandler).Methods("GET")
 	router.HandleFunc("/autores/nuevo", nuevoAutorHandler).Methods("POST")
@@ -205,9 +208,9 @@ func main() {
 	router.HandleFunc("/libros/nuevo", nuevoLibroFormHandler).Methods("GET")
 	router.HandleFunc("/libros/nuevo", nuevoLibroHandler).Methods("POST")
 
-	router.NotFoundHandler = http.HandlerFunc(management.notFoundHandler)
+	router.NotFoundHandler = http.HandlerFunc(controllers.NotFoundHandler)
 
-	router.MethodNotAllowedHandler = http.HandlerFunc(controllers.notFoundHandler)
+	router.MethodNotAllowedHandler = http.HandlerFunc(controllers.MethodNotAllowed)
 
 	// Carpeta de archivos estáticos (CSS, JS, imágenes, etc.)
 	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
@@ -262,19 +265,19 @@ func ObtenerLibrosDeAutor(db *gorm.DB, autorID uint) ([]management.Libro, error)
 // Handlers
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	controllers.renderTemplate(w, "index.html", nil)
+	controllers.RenderTemplate(w, "index.html", nil)
 }
 
 func listaAutoresHandler(w http.ResponseWriter, r *http.Request) {
 	// Renderizar la plantilla HTML con los datos ficticios de autores
-	if err := controllers.renderTemplate(w, "lista_autores.html", autores); err != nil {
+	if err := controllers.RenderTemplate(w, "lista_autores.html", autores); err != nil {
 		http.Error(w, "Error al renderizar la plantilla", http.StatusInternalServerError)
 		return
 	}
 }
 
 func nuevoAutorFormHandler(w http.ResponseWriter, r *http.Request) {
-	controllers.renderTemplate(w, "nuevo_autor.html", nil)
+	controllers.RenderTemplate(w, "nuevo_autor.html", nil)
 }
 
 func nuevoAutorHandler(w http.ResponseWriter, r *http.Request) {
@@ -314,7 +317,7 @@ func listaLibrosHandler(w http.ResponseWriter, r *http.Request) {
 // }
 
 func nuevoLibroFormHandler(w http.ResponseWriter, r *http.Request) {
-	renderTemplate(w, "nuevo_libro.html", nil)
+	controllers.RenderTemplate(w, "nuevo_libro.html", nil)
 }
 
 func nuevoLibroHandler(w http.ResponseWriter, r *http.Request) {

@@ -8,9 +8,6 @@ import (
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	// "github.com/joho/godotenv"
-	// "database/sql"
-	// "gorm.io/gorm"
 )
 
 type Config struct {
@@ -84,7 +81,7 @@ func GORMConnection(cfg Config) (*gorm.DB, error) {
 }
 
 // Funcion que nos da la conexion con la BDD
-func conexionBdd() *sql.DB {
+func ConexionBdd() *sql.DB {
 	//conexion con la BDD
 	const (
 		host     = "localhost"

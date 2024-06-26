@@ -16,12 +16,17 @@ import (
 )
 
 func main() {
+	// Conexión de la base de datos
 	connect.Connector()
 
 	// Configuración de las rutas y el servidor web
 	router := mux.NewRouter()
 	router.HandleFunc("/", controllers.HomeHandler).Methods("GET")
 
+	router.HandleFunc("/authors", controllers.AuthorsHandler).Methods("GET") // Ruta para listar autores
+	router.HandleFunc("/books", controllers.BooksHandler).Methods("GET")     // Ruta para listar autores
+
+	router.HandleFunc("/autores", controllers.ListaAutoresHandler).Methods("GET") // Ruta para listar autores
 	router.HandleFunc("/autores", controllers.ListaAutoresHandler).Methods("GET") // Ruta para listar autores
 	router.HandleFunc("/autores/nuevo", controllers.NuevoAutorFormHandler).Methods("GET")
 	router.HandleFunc("/autores/nuevo", controllers.NuevoAutorHandler).Methods("POST")
@@ -29,6 +34,7 @@ func main() {
 	router.HandleFunc("/libros/nuevo", controllers.NuevoLibroFormHandler).Methods("GET")
 	router.HandleFunc("/libros/nuevo", controllers.NuevoLibroHandler).Methods("POST")
 
+	// Rutas para el control de errores y metodos no permitidos en la aplicación
 	router.HandleFunc("/error", controllers.ErrorHandler).Methods("GET")
 	router.HandleFunc("/not-found", controllers.NotFoundHandler).Methods("GET")
 
@@ -43,5 +49,4 @@ func main() {
 	// Iniciar el servidor
 	log.Println("Servidor escuchando en http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", router))
-
 }

@@ -70,7 +70,6 @@ func menuInicio(db *sql.DB) {
 			nombreA, _ := reader.ReadString('\n')
 			nombreA = strings.TrimSpace(nombreA)
 			nautor.SetNombre(nombreA)
-
 			//Solicito el apellido del Autor
 			fmt.Println("Apellido del autor: ")
 			apellidoA, _ := reader.ReadString('\n')
@@ -82,8 +81,14 @@ func menuInicio(db *sql.DB) {
 				nlibro.GetTitulo(),
 				nlibro.GetFecha(),
 				nautor.GetNombre(),
-				nautor.GetApellido())
+				nautor.GetApellido(),
+				nautor.GetIdAutor())
 			nlibro.IngresoLibro(db)
+			nautor.IngresoAutor(db)
+			nautor.IDAutor(db)
+
+			// prueba de impresion del ID del autor
+
 		case 4:
 			//Opcion para terminar el programa
 			os.Exit(0)
